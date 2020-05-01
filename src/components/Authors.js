@@ -1,5 +1,6 @@
 import React from "react";
 import { gql, useQuery } from "@apollo/client";
+import AuthorForm from "./AuthorForm";
 
 export const ALL_AUTHORS = gql`
   query {
@@ -43,6 +44,7 @@ const Authors = (props) => {
           ))}
         </tbody>
       </table>
+      <AuthorForm />
     </div>
   );
 };
