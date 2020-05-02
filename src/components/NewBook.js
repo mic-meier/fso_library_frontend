@@ -1,28 +1,8 @@
 import React, { useState } from "react";
-import { gql, useMutation } from "@apollo/client";
-import { ALL_AUTHORS } from "./Authors";
-import { ALL_BOOKS } from "./Books";
-
-const CREATE_BOOK = gql`
-  mutation createBook(
-    $title: String!
-    $author: String!
-    $published: Int!
-    $genres: [String!]!
-  ) {
-    addBook(
-      title: $title
-      author: $author
-      published: $published
-      genres: $genres
-    ) {
-      title
-      author
-      published
-      genres
-    }
-  }
-`;
+import { useMutation } from "@apollo/client";
+import { ALL_AUTHORS } from "../queries";
+import { ALL_BOOKS } from "../queries";
+import { CREATE_BOOK } from "../queries";
 
 const NewBook = (props) => {
   const [title, setTitle] = useState("");
@@ -50,6 +30,7 @@ const NewBook = (props) => {
     setAuhtor("");
     setGenres([]);
     setGenre("");
+    props.setPage("books");
   };
 
   const addGenre = () => {
@@ -83,6 +64,7 @@ const NewBook = (props) => {
           />
         </div>
         <div>
+          genres:
           <input
             value={genre}
             onChange={({ target }) => setGenre(target.value)}
