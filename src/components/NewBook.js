@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useMutation } from "@apollo/client";
-import { ALL_AUTHORS } from "../queries";
+import { ALL_AUTHORS, FIND_BOOKS_BY_GENRE } from "../queries";
 import { ALL_BOOKS } from "../queries";
 import { CREATE_BOOK } from "../queries";
 
@@ -12,7 +12,45 @@ const NewBook = (props) => {
   const [genres, setGenres] = useState([]);
 
   const [createBook] = useMutation(CREATE_BOOK, {
-    refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }],
+    refetchQueries: [{ query: ALL_AUTHORS }],
+    onError: (error) => {
+      console.log(error.graphQLErrors[0].message);
+    },
+    update: (store, response) => {
+      const booksInStore = store.readQuery({ query: ALL_BOOKS });
+      store.writeQuery({
+        query: ALL_BOOKS,
+        data: {
+          allBooks: [...booksInStore.allBooks, response.data.addBook],
+        },
+      });
+
+      const genres = response.data.addBook.genres;
+
+      genres.forEach((genre) => {
+        try {
+          const booksByGenre = store.readQuery({
+            query: FIND_BOOKS_BY_GENRE,
+            variables: { genreToSearch: genre },
+          });
+          store.writeQuery({
+            query: FIND_BOOKS_BY_GENRE,
+            variables: { genreToSearch: genre },
+            data: {
+              allBooks: [...booksByGenre.allBooks, response.data.addBook],
+            },
+          });
+        } catch {
+          store.writeQuery({
+            query: FIND_BOOKS_BY_GENRE,
+            variables: { genreToSearch: genre },
+            data: {
+              allBooks: [response.data.addBook],
+            },
+          });
+        }
+      });
+    },
   });
   const published = Number(yearPublished);
 
